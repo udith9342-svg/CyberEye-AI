@@ -3,7 +3,7 @@ import json
 import os
 import re
 from typing import Any
-from backend.agent.orchestrator import analyze_content
+from backend.agent.tool_registry import run_tool
 
 SYSTEM_PROMPT = """You are CyberEye AI, a cautious cybersecurity assistant.
 Return ONLY JSON: {"intent":"url|sms|email|audio|video|screen|gmail|general","content":"item to analyse or empty"}.
@@ -53,7 +53,7 @@ def respond_to_message(message: str) -> dict:
     selected, mode = _classify(message)
     intent, content = selected["intent"], selected["content"]
     if intent in {"url", "sms"}:
-        result = analyze_content(intent, content or message)
+        result = run_tool("analyze_url" if intent == "url" else "analyze_sms", content or message)
         return {"reply":f"I checked the {intent.upper()} using the currently available baseline rules. Please review the evidence and limitations.", "intent":intent, "agent_mode":mode, "result":result}
     planned = {
         "email":("Email intelligence","Pasted email analysis and Gmail OAuth are not connected yet. Gmail will require explicit Google OAuth permission; never share your Gmail password."),
